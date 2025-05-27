@@ -50,7 +50,6 @@ public class ChatApp extends JFrame {
         startServerBtn.addActionListener(e -> startServer());
         stopServerBtn.addActionListener(e -> stopServer());
         openClientBtn.addActionListener(e -> openChatClient());
-
     }
 
     private void startServer() {
@@ -99,18 +98,29 @@ public class ChatApp extends JFrame {
     }
 
     private void handleClient(Socket clientSocket) {
+        String username = null;
         try (
             BufferedReader fromClient = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             PrintWriter toClient = new PrintWriter(clientSocket.getOutputStream(), true)
         ) {
+            // Read username as first message
+            username = fromClient.readLine();
+
+            // If username is null or empty, use client IP
+            if (username == null || username.trim().isEmpty()) {
+                username = clientSocket.getInetAddress().toString();
+            } else {
+                username = username.trim();
+            }
+
             clientWriters.add(toClient);
             updateClientCount();
 
-            log("Client connected: " + clientSocket.getInetAddress());
+            log(username + " connected from " + clientSocket.getInetAddress());
 
             String message;
             while ((message = fromClient.readLine()) != null) {
-                String fullMessage = "Client " + clientSocket.getInetAddress() + ": " + message;
+                String fullMessage = username + ": " + message;
                 log(fullMessage);
                 broadcastMessage(fullMessage);
             }
@@ -124,7 +134,7 @@ public class ChatApp extends JFrame {
             } catch (IOException e) {
                 log("Failed to close client socket.");
             }
-            log("Client disconnected.");
+            log(username + " disconnected.");
         }
     }
 
@@ -180,17 +190,32 @@ public class ChatApp extends JFrame {
             pack();
             setLocationRelativeTo(null);
 
+            // Ask for username before connecting
+            String username = JOptionPane.showInputDialog(this, "Enter your username:", "Username", JOptionPane.PLAIN_MESSAGE);
+            if (username == null) {
+                // User cancelled input -> use IP as username (will be assigned on server side)
+                username = "";
+            } else if (username.trim().isEmpty()) {
+                // Empty input -> use IP as username
+                username = "";
+            } else {
+                username = username.trim();
+            }
+
             sendButton.addActionListener(e -> sendMessage());
             inputField.addActionListener(e -> sendMessage());
 
-            connectToServer("localhost", 8010);
+            connectToServer("localhost", 8010, username);
         }
 
-        private void connectToServer(String host, int port) {
+        private void connectToServer(String host, int port, String username) {
             try {
                 socket = new Socket(host, port);
                 fromServer = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                 toServer = new PrintWriter(socket.getOutputStream(), true);
+
+                // Send username as the first message (can be empty)
+                toServer.println(username);
 
                 listenerThread = new Thread(() -> {
                     try {
@@ -204,7 +229,8 @@ public class ChatApp extends JFrame {
                 });
                 listenerThread.start();
 
-                appendMessage("Connected to chat server at " + host + ":" + port);
+                String displayName = username.isEmpty() ? socket.getLocalAddress().toString() : username;
+                appendMessage("Connected to chat server at " + host + ":" + port + " as " + displayName);
             } catch (IOException e) {
                 appendMessage("Unable to connect to server: " + e.getMessage());
                 sendButton.setEnabled(false);
