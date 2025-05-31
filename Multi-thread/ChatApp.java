@@ -8,7 +8,7 @@ import java.util.concurrent.*;
 public class ChatApp extends JFrame {
 
     // Server GUI components
-    private final JTextArea chatArea = new JTextArea(20, 50);
+    private final JTextArea chatArea = new JTextArea(25, 50);
     private final JLabel clientsLabel = new JLabel("Clients connected: 0");
     private final JButton startServerBtn = new JButton("Start Server");
     private final JButton stopServerBtn = new JButton("Stop Server");
