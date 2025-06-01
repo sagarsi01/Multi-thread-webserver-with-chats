@@ -24,12 +24,14 @@ public class ChatApp extends JFrame {
     public ChatApp() {
         setTitle("Chat Server with Client Launcher");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLayout(new BorderLayout());
+        setLayout(new BorderLayout(10,10));
 
         chatArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(chatArea);
 
         JPanel topPanel = new JPanel(new BorderLayout());
+        chatArea.setFont(new Font("SansSerif", Font.PLAIN, 15));
+        topPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 0, 10));
         topPanel.add(clientsLabel, BorderLayout.WEST);
 
         JPanel serverButtonsPanel = new JPanel();
@@ -164,7 +166,7 @@ public class ChatApp extends JFrame {
 
     // Inner class for Chat Client GUI
     private static class ChatClientGui extends JFrame {
-        private JTextArea chatArea = new JTextArea(20, 50);
+        private JTextArea chatArea = new JTextArea(25, 50);
         private JTextField inputField = new JTextField(40);
         private JButton sendButton = new JButton("Send");
         private Socket socket;
@@ -175,12 +177,15 @@ public class ChatApp extends JFrame {
         public ChatClientGui() {
             setTitle("Chat Client GUI");
             setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-            setLayout(new BorderLayout());
+            setLayout(new BorderLayout(10,10));
 
             chatArea.setEditable(false);
+            chatArea.setFont(new Font("Monospaced", Font.PLAIN, 13));
             JScrollPane scrollPane = new JScrollPane(chatArea);
 
             JPanel inputPanel = new JPanel();
+            inputField.setFont(new Font("SansSerif", Font.PLAIN, 14));
+            sendButton.setFont(new Font("SansSerif", Font.BOLD, 13));
             inputPanel.add(inputField);
             inputPanel.add(sendButton);
 
